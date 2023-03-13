@@ -31,7 +31,7 @@ namespace MLModelSentimentAnalysis
             public string __TheSpecialOne_ { get; set; }
 
             [ColumnName(@"@switchfoot http://twitpic.com/2y1zl - Awww, that's a bummer.  You shoulda got David Carr of Third Day to do it. ;D")]
-            public string __switchfoot_http___twitpic_com_2y1zl___Awww__that_s_a_bummer___You_shoulda_got_David_Carr_of_Third_Day_to_do_it___D { get; set; }
+            public string text { get; set; }
 
         }
 

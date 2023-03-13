@@ -10,7 +10,7 @@ MLModel.ModelInput sampleData = new MLModel.ModelInput()
     Mon_Apr_06_22_19_45_PDT_2009 = @"Mon Apr 06 22:19:53 PDT 2009",
     NO_QUERY = @"NO_QUERY",
     __TheSpecialOne_ = @"mattycus",
-    __switchfoot_http___twitpic_com_2y1zl___Awww__that_s_a_bummer___You_shoulda_got_David_Carr_of_Third_Day_to_do_it___D = @"@Kenichan I dived many times for the ball. Managed to save 50%  The rest go out of bounds",
+    text = @"@Kenichan I dived many times for the ball. Managed to save 50%  The rest go out of bounds",
 };
 
 // Make a single prediction on the sample data and print results
