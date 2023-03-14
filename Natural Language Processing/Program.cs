@@ -8,6 +8,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium;
 using System.Text;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 internal class Program
 {
@@ -41,16 +42,42 @@ internal class Program
 			// Кликаем на кнопку
 			button.Click();
 
-			string[] names = DateTimeFormatInfo.CurrentInfo.MonthNames;
-			
+			string[] months = DateTimeFormatInfo.CurrentInfo.MonthNames;
+
 			IWebElement elements = driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
 
 			List<string> text = elements.Text.Split(' ').ToList();
 
+			int index = 0;
+
+
+			
 			foreach (var item in text)
 			{
+				if (months.Any(month => month == item))
+				{
+					Console.WriteLine(item);
 
+					if (index + 2 < text.Count)
+					{
+						Regex regex = new Regex(@"Color(\w*)");
+
+						MatchCollection matches = regex.Matches(text[index + 2]);
+
+						Console.WriteLine(matches.First());
+
+						if (matches.First().ToString() == "Color")
+						{
+							
+							
+						}
+					}
+				}
+
+				index++;
 			}
+
+
 
 		}
 		catch (NoSuchElementException ex)
