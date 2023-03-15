@@ -9,6 +9,9 @@ using OpenQA.Selenium;
 using System.Text;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
+using OpenQA.Selenium.DevTools.V108.Network;
+using Natural_Language_Processing;
 
 internal class Program
 {
@@ -20,65 +23,38 @@ internal class Program
 			//Mon_Apr_06_22_19_45_PDT_2009 = @"Mon Apr 06 22:19:53 PDT 2009",
 			//NO_QUERY = @"NO_QUERY",
 			//__TheSpecialOne_ = @"mattycus",
-			text = @"I love you and hate so much",
+			text = @"I love you ",
 		};
 
+		DataReceiverAmazon dataReceiverAmazon = new DataReceiverAmazon();
 
+		var predictionResult = MLModel.Predict(sampleData);
+		//dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/Snpurdiri-Keyboard-Ultra-Compact-Waterproof-Black-White/dp/B097T276QL/ref=sr_1_1_sspa?keywords=gaming%2Bkeyboard&pd_rd_r=dc2c99a3-0204-4795-bbfb-a0c8f7dcfc71&pd_rd_w=HrIA5&pd_rd_wg=j7XhG&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=682A85JRZ87088PCQSFX&qid=1678746765&sr=8-1-spons&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExOFo3R1VOWUJOR1owJmVuY3J5cHRlZElkPUEwNjYwMzUzN0RSSzdDOFpHUTE3JmVuY3J5cHRlZEFkSWQ9QTA3MDcyNTYxSE1FT1IzNFoySTFHJndpZGdldE5hbWU9c3BfYXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ&th=1");
 
-		//var predictionResult = MLModel.Predict(sampleData);
-
-
-
-
-		IWebDriver driver = new ChromeDriver();
-
-		driver.Navigate().GoToUrl("https://www.amazon.com/Snpurdiri-Keyboard-Ultra-Compact-Waterproof-Black-White/dp/B097T276QL/ref=sr_1_1_sspa?keywords=gaming%2Bkeyboard&pd_rd_r=dc2c99a3-0204-4795-bbfb-a0c8f7dcfc71&pd_rd_w=HrIA5&pd_rd_wg=j7XhG&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=682A85JRZ87088PCQSFX&qid=1678746765&sr=8-1-spons&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExOFo3R1VOWUJOR1owJmVuY3J5cHRlZElkPUEwNjYwMzUzN0RSSzdDOFpHUTE3JmVuY3J5cHRlZEFkSWQ9QTA3MDcyNTYxSE1FT1IzNFoySTFHJndpZGdldE5hbWU9c3BfYXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ&th=1");
+		dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/nuphy-Halo65-Bluetooth%E3%80%812-4G-Connection%EF%BC%8CCompatible-Windows-Black/dp/B0BJTVK6TT/ref=cm_cr_arp_d_product_top?ie=UTF8");
 
 		try
 		{
-			// Находим кнопку по ID
-			IWebElement button = driver.FindElement(By.XPath("//a[@class='a-link-emphasis a-text-bold']"));
+			IWebElement buttonToStartReviews = dataReceiverAmazon.driver.FindElement(By.XPath("//a[@class='a-link-emphasis a-text-bold']"));
 
-			// Кликаем на кнопку
-			button.Click();
+			buttonToStartReviews.Click();
 
-			string[] months = DateTimeFormatInfo.CurrentInfo.MonthNames;
+			IWebElement elements = dataReceiverAmazon.driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
 
-			IWebElement elements = driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
+			List<string> reviews = new List<string>();
 
-			List<string> text = elements.Text.Split(' ').ToList();
+			reviews.AddRange(dataReceiverAmazon.ParseTextToReviews(elements.Text.Split(' ').ToList()));
 
-			int index = 0;
+			reviews.AddRange(GetAllReviews(dataReceiverAmazon));
 
 
-			
-			foreach (var item in text)
-			{
-				if (months.Any(month => month == item))
-				{
-					Console.WriteLine(item);
+			//Stopwatch stopwatch = new Stopwatch();
 
-					if (index + 2 < text.Count)
-					{
-						Regex regex = new Regex(@"Color(\w*)");
+			//stopwatch.Start();
 
-						MatchCollection matches = regex.Matches(text[index + 2]);
+			//var predictionResult2 = MLModel.Predict(new MLModel.ModelInput() { text = reviews[0] });
 
-						Console.WriteLine(matches.First());
-
-						if (matches.First().ToString() == "Color")
-						{
-							
-							
-						}
-					}
-				}
-
-				index++;
-			}
-
-
-
+			//stopwatch.Stop();
 		}
 		catch (NoSuchElementException ex)
 		{
@@ -88,15 +64,41 @@ internal class Program
 		finally
 		{
 			// Закрываем браузер
-			driver.Quit();
+			dataReceiverAmazon.driver.Quit();
 		}
-
-
-
-
 		// Make a single prediction on the sample data and print results
 	}
+
+	private static List<string> GetAllReviews(DataReceiverAmazon dataReceiverAmazon)
+	{
+		List<string> reviewsParsed = new List<string>();
+
+		IWebElement elements;
+		
+		try
+		{
+			while (true)
+			{
+				IWebElement buttonNext = dataReceiverAmazon.driver.FindElement(By.XPath("//a[contains(text(),'Next page')]"));
+
+				buttonNext.Click();
+
+				elements = dataReceiverAmazon.driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
+
+				reviewsParsed.AddRange(dataReceiverAmazon.ParseTextToReviews(elements.Text.Split(' ').ToList()));
+			}
+
+		}
+		catch (Exception)
+		{
+			return reviewsParsed;
+
+			throw;
+		}
+
+	}
 }
+
 //string endpoint = "https://nlpservicehub.cognitiveservices.azure.com/";
 
 //string path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"ApiKey.txt");
