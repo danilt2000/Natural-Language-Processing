@@ -165,16 +165,16 @@ internal class Program
 				{
 					Console.WriteLine();
 					
-				}if (indexCountLongest==15)
+				}if (indexCountLongest==20)
 				{
 					Console.WriteLine();
 					
-				}if (indexCountLongest==15)
+				}if (indexCountLongest==25)
 				{
 					Console.WriteLine();
 					
 				}
-				if (indexCountLongest==25)
+				if (indexCountLongest==30)
 				{
 					Console.WriteLine();
 					
