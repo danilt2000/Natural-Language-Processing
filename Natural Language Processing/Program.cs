@@ -123,6 +123,15 @@ internal class Program
 			{
 				Console.Write($"N{indexCount}=>{item},");
 
+				if (indexCount == 15)
+				{
+					Console.WriteLine();
+
+				}if (indexCount == 25)
+				{
+					Console.WriteLine();
+
+				}
 				Console.ForegroundColor = GetRandomConsoleColor();
 
 				indexCount++;
@@ -144,6 +153,32 @@ internal class Program
 			{
 				Console.Write($"N{indexCountLongest}=>{item},");
 
+				if (indexCountLongest==5)
+				{
+					Console.WriteLine();
+					
+				}if (indexCountLongest==10)
+				{
+					Console.WriteLine();
+					
+				}if (indexCountLongest==15)
+				{
+					Console.WriteLine();
+					
+				}if (indexCountLongest==15)
+				{
+					Console.WriteLine();
+					
+				}if (indexCountLongest==15)
+				{
+					Console.WriteLine();
+					
+				}
+				if (indexCountLongest==25)
+				{
+					Console.WriteLine();
+					
+				}
 				Console.ForegroundColor = GetRandomConsoleColor();
 
 				indexCountLongest++;
