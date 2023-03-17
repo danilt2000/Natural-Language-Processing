@@ -32,18 +32,13 @@ namespace Natural_Language_Processing
 			{
 				if (months.Any(month => month == text[item]))
 				{
-					Console.WriteLine(item);
-
 					if (item + 2 < text.Count)
 					{
-						Regex regex = new Regex(@"ColorSizeVerified(\w*)");
+						Regex regex = new Regex(@"\b[20]\w+");
 
 						MatchCollection matches = regex.Matches(text[item + 2]);
 
-						//Console.WriteLine(matches.First());
-
-						if (matches.First().ToString() == "Color"|| matches.First().ToString() == "Size" 
-							|| matches.First().ToString() == "Verified")
+						if (matches.Count > 0)
 						{
 
 
@@ -77,16 +72,23 @@ namespace Natural_Language_Processing
 			return parsedReviews;
 		}
 
-		// открываем сайт
-		//driver.Navigate().GoToUrl("https://www.example.com/");
-
-		//// находим элемент на странице по значению атрибута "href"
-		//IWebElement element = driver.FindElement(By.CssSelector("a[href='https://www.example.com/page']"));
-
-		//// выводим текст элемента в консоль
-		//Console.WriteLine(element.Text);
-
-		// закрываем браузер
-		//driver.Close();
+		internal List<T> removeDuplicates<T>(List<T> list)
+		{
+			return new HashSet<T>(list).ToList();
+		}
 	}
+
+
+
+	// открываем сайт
+	//driver.Navigate().GoToUrl("https://www.example.com/");
+
+	//// находим элемент на странице по значению атрибута "href"
+	//IWebElement element = driver.FindElement(By.CssSelector("a[href='https://www.example.com/page']"));
+
+	//// выводим текст элемента в консоль
+	//Console.WriteLine(element.Text);
+
+	// закрываем браузер
+	//driver.Close();
 }

@@ -1,22 +1,18 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Azure.AI.TextAnalytics;
-using Azure;
-using System.Reflection.Metadata;
-using System.Reflection;
 using MLModelSentimentAnalysis;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium;
-using System.Text;
-using System.Globalization;
-using System.Text.RegularExpressions;
-using System.Diagnostics;
-using OpenQA.Selenium.DevTools.V108.Network;
 using Natural_Language_Processing;
+using OpenQA.Selenium;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Threading.Tasks;
+using WordCloudSharp;
 
 internal class Program
 {
 	private static void Main(string[] args)
 	{
+		string url = "https://www.amazon.com/Manhattan-Wired-Membrane-Gaming-Keyboard/dp/B09XFG9BWF/ref=sr_1_59?keywords=gaming%2Bkeyboard&pd_rd_r=20ff9213-fddf-410b-b20a-4e430da8b701&pd_rd_w=Ok9Wr&pd_rd_wg=gtEiC&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=KHN2F6AP2DWDKV72WZJP&qid=1679007831&sr=8-59&th=1";
+		
 		MLModel.ModelInput sampleData = new MLModel.ModelInput()
 		{
 			//_1467810369 = 1.467811E+09F,
@@ -29,9 +25,16 @@ internal class Program
 		DataReceiverAmazon dataReceiverAmazon = new DataReceiverAmazon();
 
 		var predictionResult = MLModel.Predict(sampleData);
+
 		//dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/Snpurdiri-Keyboard-Ultra-Compact-Waterproof-Black-White/dp/B097T276QL/ref=sr_1_1_sspa?keywords=gaming%2Bkeyboard&pd_rd_r=dc2c99a3-0204-4795-bbfb-a0c8f7dcfc71&pd_rd_w=HrIA5&pd_rd_wg=j7XhG&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=682A85JRZ87088PCQSFX&qid=1678746765&sr=8-1-spons&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUExOFo3R1VOWUJOR1owJmVuY3J5cHRlZElkPUEwNjYwMzUzN0RSSzdDOFpHUTE3JmVuY3J5cHRlZEFkSWQ9QTA3MDcyNTYxSE1FT1IzNFoySTFHJndpZGdldE5hbWU9c3BfYXRmJmFjdGlvbj1jbGlja1JlZGlyZWN0JmRvTm90TG9nQ2xpY2s9dHJ1ZQ&th=1");
 
-		dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/nuphy-Halo65-Bluetooth%E3%80%812-4G-Connection%EF%BC%8CCompatible-Windows-Black/dp/B0BJTVK6TT/ref=cm_cr_arp_d_product_top?ie=UTF8");
+		//dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/nuphy-Halo65-Bluetooth%E3%80%812-4G-Connection%EF%BC%8CCompatible-Windows-Black/dp/B0BJTVK6TT/ref=cm_cr_arp_d_product_top?ie=UTF8");
+
+		//dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/Corsair-K100-Mechanical-Gaming-Keyboard/dp/B08HR68MQZ/ref=sr_1_36?keywords=gaming%2Bkeyboard&pd_rd_r=fdd7ea3a-5bb0-48d3-a8a2-5661d0661600&pd_rd_w=fGVGq&pd_rd_wg=oJylQ&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=2BJHKTCD17E31HZNA119&qid=1679005483&sr=8-36&th=1");
+
+		dataReceiverAmazon.driver.Navigate().GoToUrl(url);
+
+		Console.WriteLine($"URL:{url}");
 
 		try
 		{
@@ -47,6 +50,39 @@ internal class Program
 
 			reviews.AddRange(GetAllReviews(dataReceiverAmazon));
 
+			Console.WriteLine($"Reviews {reviews.Count}");
+
+			Console.WriteLine($"Sentiment word Cloud");
+
+			var wordsTemp = reviews.SelectMany(x => x.Split(' '));
+
+			List<string> words = wordsTemp.ToList();
+
+			for (int i = 0; i < words.Count(); i++)
+			{
+				words[i] = words[i].Replace("\r\n", string.Empty);
+			}
+
+			Review review = new Review();
+
+			review.CurrentSentiment = Review.Sentiment.Positive;
+
+
+			List<string> topFrequencyWords = words
+			.Where(x => !string.IsNullOrEmpty(x))
+			.GroupBy(x => x.ToLower())
+			.OrderByDescending(x => x.Count())
+			.Take(30)
+			.Select(x => x.Key)
+			.ToList();
+
+			words = dataReceiverAmazon.removeDuplicates(words);
+
+			List<string> topLengthWords = words
+			   .Where(x => !string.IsNullOrEmpty(x))
+			.OrderByDescending(x => x.Length)
+			.Take(30)
+			.ToList();
 
 			//Stopwatch stopwatch = new Stopwatch();
 
@@ -55,15 +91,28 @@ internal class Program
 			//var predictionResult2 = MLModel.Predict(new MLModel.ModelInput() { text = reviews[0] });
 
 			//stopwatch.Stop();
+
+			List<int> positionWordCloud = new List<int>();
+
+			for (int i = 1; i <= 30; i++)
+			{
+				positionWordCloud.Add(i);
+			}
+			Bitmap maskBitmap = new Bitmap("C:\\test\\CircleBitmap.png");
+
+			var wordCloud = new WordCloud(500, 500, mask: maskBitmap, allowVerical: true, fontname: "YouYuan");
+			//wordCloud.OnProgress += Wc_OnProgress;
+			//var image = wordCloud.Draw(topLengthWords, positionWordCloud);
+			var image = wordCloud.Draw(topFrequencyWords, positionWordCloud);
+
+			image.Save($"G:\\temp\\{Guid.NewGuid()}.png", ImageFormat.Png);
 		}
 		catch (NoSuchElementException ex)
 		{
-			// Если элемент не найден, выводим сообщение об ошибке
-			Console.WriteLine("Элемент не найден на странице");
+
 		}
 		finally
 		{
-			// Закрываем браузер
 			dataReceiverAmazon.driver.Quit();
 		}
 		// Make a single prediction on the sample data and print results
@@ -73,8 +122,6 @@ internal class Program
 	{
 		List<string> reviewsParsed = new List<string>();
 
-		IWebElement elements;
-		
 		try
 		{
 			while (true)
@@ -83,19 +130,20 @@ internal class Program
 
 				buttonNext.Click();
 
-				elements = dataReceiverAmazon.driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
+				Thread.Sleep(1500);
+
+				IWebElement elements = dataReceiverAmazon.driver.FindElement(By.XPath("//*[@id=\"cm_cr-review_list\"]"));
 
 				reviewsParsed.AddRange(dataReceiverAmazon.ParseTextToReviews(elements.Text.Split(' ').ToList()));
 			}
-
 		}
+
 		catch (Exception)
 		{
 			return reviewsParsed;
 
 			throw;
 		}
-
 	}
 }
 
