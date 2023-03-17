@@ -11,8 +11,6 @@ internal class Program
 {
 	private static void Main(string[] args)
 	{
-		string url = "https://www.amazon.com/Manhattan-Wired-Membrane-Gaming-Keyboard/dp/B09XFG9BWF/ref=sr_1_59?keywords=gaming%2Bkeyboard&pd_rd_r=20ff9213-fddf-410b-b20a-4e430da8b701&pd_rd_w=Ok9Wr&pd_rd_wg=gtEiC&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=KHN2F6AP2DWDKV72WZJP&qid=1679007831&sr=8-59&th=1";
-		
 		MLModel.ModelInput sampleData = new MLModel.ModelInput()
 		{
 			//_1467810369 = 1.467811E+09F,
@@ -22,7 +20,6 @@ internal class Program
 			text = @"I love you ",
 		};
 
-		DataReceiverAmazon dataReceiverAmazon = new DataReceiverAmazon();
 
 		var predictionResult = MLModel.Predict(sampleData);
 
@@ -32,9 +29,20 @@ internal class Program
 
 		//dataReceiverAmazon.driver.Navigate().GoToUrl("https://www.amazon.com/Corsair-K100-Mechanical-Gaming-Keyboard/dp/B08HR68MQZ/ref=sr_1_36?keywords=gaming%2Bkeyboard&pd_rd_r=fdd7ea3a-5bb0-48d3-a8a2-5661d0661600&pd_rd_w=fGVGq&pd_rd_wg=oJylQ&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=2BJHKTCD17E31HZNA119&qid=1679005483&sr=8-36&th=1");
 
+		string url = "https://www.amazon.com/Manhattan-Wired-Membrane-Gaming-Keyboard/dp/B09XFG9BWF/ref=sr_1_59?keywords=gaming%2Bkeyboard&pd_rd_r=20ff9213-fddf-410b-b20a-4e430da8b701&pd_rd_w=Ok9Wr&pd_rd_wg=gtEiC&pf_rd_p=12129333-2117-4490-9c17-6d31baf0582a&pf_rd_r=KHN2F6AP2DWDKV72WZJP&qid=1679007831&sr=8-59&th=1";
+
+		DataReceiverAmazon dataReceiverAmazon = new DataReceiverAmazon();
+
 		dataReceiverAmazon.driver.Navigate().GoToUrl(url);
 
 		Console.WriteLine($"URL:{url}");
+
+		List<int> positionWordCloud = new List<int>();
+
+		for (int i = 1; i <= 30; i++)
+		{
+			positionWordCloud.Add(i);
+		}
 
 		try
 		{
@@ -50,9 +58,47 @@ internal class Program
 
 			reviews.AddRange(GetAllReviews(dataReceiverAmazon));
 
+			List<ReviewData> reviewDatas = dataReceiverAmazon.GetSentimentData(reviews);
+
 			Console.WriteLine($"Reviews {reviews.Count}");
 
-			Console.WriteLine($"Sentiment word Cloud");
+			CountReview positiveCount = new CountReview(CountReview.Sentiment.Positive);
+
+			CountReview negativeCount = new CountReview(CountReview.Sentiment.Negative);
+
+			CountReview neutralCount = new CountReview(CountReview.Sentiment.Neutral);
+
+			foreach (var item in reviewDatas)
+			{
+				if (item.CurrentSentiment == ReviewData.Sentiment.Negative)
+				{
+					negativeCount.Count++;
+				}
+				if (item.CurrentSentiment == ReviewData.Sentiment.Positive)
+				{
+					positiveCount.Count++;
+				}
+				if (item.CurrentSentiment == ReviewData.Sentiment.Neutral)
+				{
+					neutralCount.Count++;
+				}
+			}
+
+			Console.WriteLine($"Sentiment Neutral=>{neutralCount.Count}" +
+				$" Positive=>{positiveCount.Count} Negative=>{negativeCount.Count}");
+
+			List<CountReview> sentimentPosition = new List<CountReview>()
+
+			{ positiveCount, negativeCount, neutralCount };
+
+			sentimentPosition = sentimentPosition.OrderByDescending(x => x.Count).ToList();
+
+			List<string> sentimentPositionForCloud = new List<string>();
+
+			sentimentPosition.ForEach(x => sentimentPositionForCloud.Add(x.CurrentSentiment.ToString()));
+
+			CreateWordCloud(sentimentPositionForCloud, "C:\\test\\CircleBitmap.png",
+				$"G:\\temp\\WordCloud\\{Guid.NewGuid()}.png", new List<int>() { 1, 2, 3 });
 
 			var wordsTemp = reviews.SelectMany(x => x.Split(' '));
 
@@ -63,49 +109,37 @@ internal class Program
 				words[i] = words[i].Replace("\r\n", string.Empty);
 			}
 
-			Review review = new Review();
+			List<string> topFrequencyWords = dataReceiverAmazon.GetTop30FrequencyWords(words);
 
-			review.CurrentSentiment = Review.Sentiment.Positive;
+			Console.WriteLine("30 Most used words");
 
+			int indexCount = 1;
 
-			List<string> topFrequencyWords = words
-			.Where(x => !string.IsNullOrEmpty(x))
-			.GroupBy(x => x.ToLower())
-			.OrderByDescending(x => x.Count())
-			.Take(30)
-			.Select(x => x.Key)
-			.ToList();
-
-			words = dataReceiverAmazon.removeDuplicates(words);
-
-			List<string> topLengthWords = words
-			   .Where(x => !string.IsNullOrEmpty(x))
-			.OrderByDescending(x => x.Length)
-			.Take(30)
-			.ToList();
-
-			//Stopwatch stopwatch = new Stopwatch();
-
-			//stopwatch.Start();
-
-			//var predictionResult2 = MLModel.Predict(new MLModel.ModelInput() { text = reviews[0] });
-
-			//stopwatch.Stop();
-
-			List<int> positionWordCloud = new List<int>();
-
-			for (int i = 1; i <= 30; i++)
+			foreach (var item in topFrequencyWords)
 			{
-				positionWordCloud.Add(i);
+				Console.Write($"N{indexCount}=>{item},");
+
+				indexCount++;
 			}
-			Bitmap maskBitmap = new Bitmap("C:\\test\\CircleBitmap.png");
 
-			var wordCloud = new WordCloud(500, 500, mask: maskBitmap, allowVerical: true, fontname: "YouYuan");
-			//wordCloud.OnProgress += Wc_OnProgress;
-			//var image = wordCloud.Draw(topLengthWords, positionWordCloud);
-			var image = wordCloud.Draw(topFrequencyWords, positionWordCloud);
+			CreateWordCloud(topFrequencyWords, "C:\\test\\CircleBitmap.png", $"G:\\temp\\WordCloud\\{Guid.NewGuid()}.png", positionWordCloud);
 
-			image.Save($"G:\\temp\\{Guid.NewGuid()}.png", ImageFormat.Png);
+			List<string> topLengthWords = dataReceiverAmazon.GetTop30LengthWords(words);
+
+			Console.WriteLine();
+
+			Console.WriteLine("30 Longest words");
+
+			int indexCountLongest = 1;
+
+			foreach (var item in topLengthWords)
+			{
+				Console.Write($"N{indexCountLongest}=>{item},");
+
+				indexCountLongest++;
+			}
+
+			CreateWordCloud(topLengthWords, "C:\\test\\CircleBitmap.png", $"G:\\temp\\WordCloud\\{Guid.NewGuid()}.png", positionWordCloud);
 		}
 		catch (NoSuchElementException ex)
 		{
@@ -116,6 +150,18 @@ internal class Program
 			dataReceiverAmazon.driver.Quit();
 		}
 		// Make a single prediction on the sample data and print results
+	}
+
+	private static void CreateWordCloud(List<string> datas, string pathBitmap, string pathToSave, List<int> positionWordCloud)
+	{
+		Bitmap maskBitmap = new Bitmap(pathBitmap);
+
+		var wordCloud = new WordCloud(500, 500, mask: maskBitmap, allowVerical: true, fontname: "YouYuan");
+		//wordCloud.OnProgress += Wc_OnProgress;
+		//var image = wordCloud.Draw(topLengthWords, positionWordCloud);
+		var image = wordCloud.Draw(datas, positionWordCloud);
+
+		image.Save(pathToSave, ImageFormat.Png);
 	}
 
 	private static List<string> GetAllReviews(DataReceiverAmazon dataReceiverAmazon)

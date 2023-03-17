@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace Natural_Language_Processing
 {
-	internal class ReviewData
+	internal class CountReview
 	{
 		public enum Sentiment { Positive, Negative, Neutral };
 
 		private Sentiment _sentiment;
+
+		public CountReview(Sentiment currentSentiment)
+		{
+			CurrentSentiment = currentSentiment;
+		}
 
 		public Sentiment CurrentSentiment
 		{
@@ -18,6 +23,6 @@ namespace Natural_Language_Processing
 			set { _sentiment = value; }
 		}
 
-		public string? Review { get; set; }
+		public int Count { get; set; }
 	}
 }
