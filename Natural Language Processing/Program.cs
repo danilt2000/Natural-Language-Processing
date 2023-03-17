@@ -2,6 +2,7 @@
 using MLModelSentimentAnalysis;
 using Natural_Language_Processing;
 using OpenQA.Selenium;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
@@ -59,6 +60,7 @@ internal class Program
 			reviews.AddRange(GetAllReviews(dataReceiverAmazon));
 
 			List<ReviewData> reviewDatas = dataReceiverAmazon.GetSentimentData(reviews);
+			Console.ForegroundColor = ConsoleColor.Yellow;
 
 			Console.WriteLine($"Reviews {reviews.Count}");
 
@@ -83,7 +85,7 @@ internal class Program
 					neutralCount.Count++;
 				}
 			}
-
+			Console.ForegroundColor = ConsoleColor.Blue;
 			Console.WriteLine($"Sentiment Neutral=>{neutralCount.Count}" +
 				$" Positive=>{positiveCount.Count} Negative=>{negativeCount.Count}");
 
@@ -111,6 +113,8 @@ internal class Program
 
 			List<string> topFrequencyWords = dataReceiverAmazon.GetTop30FrequencyWords(words);
 
+			Console.ForegroundColor = ConsoleColor.Yellow;
+
 			Console.WriteLine("30 Most used words");
 
 			int indexCount = 1;
@@ -118,6 +122,8 @@ internal class Program
 			foreach (var item in topFrequencyWords)
 			{
 				Console.Write($"N{indexCount}=>{item},");
+
+				Console.ForegroundColor = GetRandomConsoleColor();
 
 				indexCount++;
 			}
@@ -128,6 +134,8 @@ internal class Program
 
 			Console.WriteLine();
 
+			Console.ForegroundColor = ConsoleColor.Cyan;
+
 			Console.WriteLine("30 Longest words");
 
 			int indexCountLongest = 1;
@@ -135,6 +143,8 @@ internal class Program
 			foreach (var item in topLengthWords)
 			{
 				Console.Write($"N{indexCountLongest}=>{item},");
+
+				Console.ForegroundColor = GetRandomConsoleColor();
 
 				indexCountLongest++;
 			}
@@ -190,6 +200,30 @@ internal class Program
 
 			throw;
 		}
+	}
+
+	private static Random _random = new Random();
+
+	private static ConsoleColor GetRandomConsoleColor()
+	{
+		var consoleColors = Enum.GetValues(typeof(ConsoleColor));
+
+		ConsoleColor color = (ConsoleColor)consoleColors.GetValue(_random.Next(consoleColors.Length));
+		
+		while (color == ConsoleColor.DarkBlue ||
+			color == ConsoleColor.DarkCyan ||
+			color == ConsoleColor.DarkGray ||
+			color == ConsoleColor.DarkGreen ||
+			color == ConsoleColor.DarkMagenta ||
+			color == ConsoleColor.DarkRed ||
+			color == ConsoleColor.DarkYellow ||
+			color == ConsoleColor.Black ||
+			color == ConsoleColor.DarkCyan)
+		{
+			color = (ConsoleColor)consoleColors.GetValue(_random.Next(consoleColors.Length));
+		}
+		
+		return color;
 	}
 }
 
