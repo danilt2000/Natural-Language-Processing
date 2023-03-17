@@ -36,7 +36,7 @@ Příklad zobrazení v tabulce:
 <img width="600" height="600" src="https://user-images.githubusercontent.com/75219332/226056102-6f70870d-d657-4e89-bef7-3ca7e4159eef.png"></img>
 <img width="600" height="600" src="https://user-images.githubusercontent.com/75219332/226056315-1c7dcf7e-de89-4e39-898d-0e1459352566.png"></img>
 <img width="600" height="600" src="https://user-images.githubusercontent.com/75219332/226056335-e6a6e9a1-1df3-4ae0-94a3-b10f4e18bdeb.png"></img>
-<h2>For the change of product</h2>
+<h2>For the change product</h2>
 <img src="https://user-images.githubusercontent.com/75219332/226057494-83441997-bf2b-4b4a-a5f4-a84374035fdc.png"></img>
 
 <h2>The statistics I used to train the model can be found here</h2>
